@@ -1,5 +1,5 @@
 {
-  "name": "cv-manager",
+  "name": "hyur-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/scririck/cv-manager.git"
+    "url": "git+https://github.com/scririck/hyur-server.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/scririck/cv-manager/issues"
+    "url": "https://github.com/scririck/hyur-server/issues"
   },
-  "homepage": "https://github.com/scririck/cv-manager#readme",
+  "homepage": "https://github.com/scririck/hyur-server#readme",
   "dependencies": {
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
