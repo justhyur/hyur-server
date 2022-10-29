@@ -11,6 +11,6 @@ app.listen(PORT, () => {
 app.get('/test', (req, res) => {
     res.status(200).send({
         name: 'ok',
-        cool: 'dsds',
+        cool: 'cool',
     });
 });
