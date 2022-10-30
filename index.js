@@ -13,7 +13,10 @@ let BCN_ASSETS;
 
 //FUNCTIONS
 const getBCNAssets = async () => {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox']
+    });
     console.log("Opening browser...");
     const page = await browser.newPage();
     await page.goto('https://particulares.bcn.cv/', {
