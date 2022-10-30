@@ -46,6 +46,7 @@ app.get('/cv-assets/:bank', (req, res) => {
             res.status(200).send(assets);
         })
         .catch(err => {
+            res.status(401).send('Username or Password invalid.');
             console.log(err);
         })
     }
