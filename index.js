@@ -1,69 +1,74 @@
 //DEPENDENCIES
 const dotenv = require('dotenv');
+const fs = require('fs');
 const express = require('express');
 const app = express();
+const {getBCNAssets, getCAIXAAssets} = require('./cv-banks');
 const puppeteer = require('puppeteer');
+let BROWSER;
 
 dotenv.config();
 
 //GLOBALS
 const PORT = process.env.PORT || 8080;
-const { BCN_USER, BCN_PSWD, SERVER_TOKEN } = process.env;
-let BCN_ASSETS;
+const { SERVER_TOKEN } = process.env;
 
 //FUNCTIONS
-const getBCNAssets = async () => {
-    const browser = await puppeteer.launch();
-    console.log("Opening browser...");
-    const page = await browser.newPage();
-    await page.goto('https://particulares.bcn.cv/', {
-        waitUntil: 'networkidle0', 
-        timeout: 0
+const writeJSONFile = (file, path) => {
+    fs.writeFileSync(path, JSON.stringify(file), (err) => {
+        if(err){console.error(err);}
     });
-
-    const frameHandle = await page.$("iframe[id=mainFrame]");
-    const frame = await frameHandle.contentFrame();
-
-    await frame.evaluate(({BCN_USER, BCN_PSWD}) => {
-        document.querySelector("#ctl00_ctl00_Utilizador").value = BCN_USER;
-        document.querySelector("#ctl00_ctl00_Password").value = BCN_PSWD;
-        document.querySelector("#ctl00_ctl00_SubmitBtn").click();
-    }, {BCN_USER, BCN_PSWD});
-
-    await frame.waitForNavigation({waitUntil: 'networkidle0',});
-    const assets = await frame.evaluate(() => {
-        return document.querySelector("#ctl00_ctl00_Ctrl_CPIN1_GridViewActivos > thead > tr > th.text-right").innerText;
+}
+const readJSONFile = (path) => {
+    if(!fs.existsSync(path)){return null}
+    const file = fs.readFileSync(path, (err)=>{
+        if(err){console.error(err)}
     });
-    await browser.close();
-    console.log("Browser closed.");
-    return assets;
+    return JSON.parse(file);
 }
 
+//API
 app.use(express.json());
-
-app.listen(PORT, () => {
-    console.log(`Server started on PORT ${PORT}.`)
-});
 
 app.get('/test', (req, res) => {
     res.status(200).send('API is online.');
 });
 
-app.get('/bcn-assets', (req, res) => {
+app.get('/cv-assets/:bank', (req, res) => {
     const {token} = req.query;
     if(token !== SERVER_TOKEN){
-        res.status(401).send('Token not valid.');
+        res.status(401).send('Token is missing or not valid.');
     }
-    res.status(200).send(BCN_ASSETS);
+    const {bank} = req.params;
+    const assets = readJSONFile(`./database/${bank}_assets.json`);
+    res.status(200).send(assets);
+});
+
+app.listen(PORT, () => {
+    console.log(`Server started on PORT ${PORT}.`)
 });
 
 //RUNTIME
-const runtime = async (seconds) => {
-    const milliseconds = seconds * 1000;
+const runtime = (minutes) => {
+    const milliseconds = minutes * 60 * 1000;
     console.log('Runtiming...');
     setTimeout(()=>{
         runtime(milliseconds);
     }, milliseconds);
-    BCN_ASSETS = await getBCNAssets();
+    //BCN
+    getBCNAssets(BROWSER, process.env).then(bcnAssets => {
+        writeJSONFile(bcnAssets, './database/bcn_assets.json');
+    });
+    //CAIXA
+    getCAIXAAssets(BROWSER, process.env).then(caixaAssets => {
+        writeJSONFile(caixaAssets, './database/caixa_assets.json');
+    });
 }
-runtime(5 * 60);
+
+puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox']
+}).then(res => {
+    BROWSER = res;
+    runtime(process.env.RUNTIME_MINUTES);
+});
