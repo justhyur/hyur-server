@@ -27,6 +27,8 @@ app.get('/cv-assets/:bank', (req, res) => {
     const {userName, password, token} = req.query;
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
+    }else if(!userName || !password){
+        res.status(401).send('Username or Password missing.');
     }else{
         const {bank} = req.params;
         const bankFunction = bank === 'bcn' ? getBCNAssets : getCAIXAAssets;
