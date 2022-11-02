@@ -52,7 +52,10 @@ app.get('/cv-prime/book', async (req, res) => {
         res.status(401).send('The number of days has to be between 1 and 30.');
     }else{
 
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox']
+        });
         console.log("Browser opened.");
         const page = await browser.newPage();
 
@@ -95,7 +98,10 @@ app.get('/cv-prime/accept-invitations', async (req, res) => {
         res.status(401).send('The number of bookings has to be greater than 0.');
     }else{
 
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox']
+        });
         console.log("Browser opened.");
         const page = await browser.newPage();
 
@@ -126,7 +132,10 @@ app.get('/cv-prime/meetings', async (req, res) => {
         res.status(401).send('Username or Password missing.');
     }else{
 
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox']
+        });
         console.log("Browser opened.");
         const page = await browser.newPage();
 
