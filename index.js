@@ -1,10 +1,11 @@
 //DEPENDENCIES
 const dotenv = require('dotenv');
-const fs = require('fs');
 const express = require('express');
+const puppeteer = require('puppeteer');
 const cors = require('cors')
 const app = express();
 const {getBCNAssets, getCAIXAAssets} = require('./cv-banks');
+const {PRIME_logIn, PRIME_bookDays, PRIME_acceptBookings, PRIME_getMeetings} = require('./cv-prime');
 
 dotenv.config();
 
@@ -13,18 +14,6 @@ const PORT = process.env.PORT || 8080;
 const { SERVER_TOKEN } = process.env;
 
 //FUNCTIONS
-const writeJSONFile = (file, path) => {
-    fs.writeFileSync(path, JSON.stringify(file), (err) => {
-        if(err){console.error(err);}
-    });
-}
-const readJSONFile = (path) => {
-    if(!fs.existsSync(path)){return null}
-    const file = fs.readFileSync(path, (err)=>{
-        if(err){console.error(err)}
-    });
-    return JSON.parse(file);
-}
 
 //API
 app.use(cors());
@@ -52,15 +41,110 @@ app.get('/cv-assets/:bank', (req, res) => {
     }
 });
 
+app.get('/cv-prime/book', async (req, res) => {
+    const {token, userName, password, branchCode, timeStamp, numDays, numMinutes, acceptBookings} = req.query;
+    
+    if(token !== SERVER_TOKEN){
+        res.status(401).send('Token is missing or not valid.');
+    }else if(!userName || !password){
+        res.status(401).send('Username or Password missing.');
+    }else if(!numDays || numDays <= 0 || numDays > 30){
+        res.status(401).send('The number of days has to be between 1 and 30.');
+    }else{
+
+        const browser = await puppeteer.launch();
+        console.log("Browser opened.");
+        const page = await browser.newPage();
+
+        const urlAfterLogin = await PRIME_logIn(page, userName, password);
+        if(urlAfterLogin === 'https://coworking.prime.cv/web/login'){
+            res.status(401).send('Username or Password invalid.');
+        }else{
+            console.log(`${userName} logged in.`);
+            const bookedDays = await PRIME_bookDays(page, branchCode, timeStamp, numDays, numMinutes);
+            if(bookedDays.error){
+                res.status(401).send(bookedDays.message);
+            }else{
+                if(bookedDays > 0 && acceptBookings.toString() === 'true'){
+                    const hasAccepted = await PRIME_acceptBookings(page, bookedDays);
+                    if(hasAccepted.error){
+                        res.status(401).send(hasAccepted.message);
+                    }else{
+                        res.status(200).send(`${bookedDays} days booked. ${hasAccepted.message}`);
+                    }
+                }else{
+                    res.status(200).send(`${bookedDays} days booked. Those days invitations were not accepted.`)
+                }
+            }
+        }
+
+        await page.close();
+        await browser.close();
+    
+    }
+});
+
+app.get('/cv-prime/accept-invitations', async (req, res) => {
+    const {token, userName, password, numBookings} = req.query;
+    
+    if(token !== SERVER_TOKEN){
+        res.status(401).send('Token is missing or not valid.');
+    }else if(!userName || !password){
+        res.status(401).send('Username or Password missing.');
+    }else if(!numBookings || numBookings <= 0){
+        res.status(401).send('The number of bookings has to be greater than 0.');
+    }else{
+
+        const browser = await puppeteer.launch();
+        console.log("Browser opened.");
+        const page = await browser.newPage();
+
+        const urlAfterLogin = await PRIME_logIn(page, userName, password);
+        if(urlAfterLogin === 'https://coworking.prime.cv/web/login'){
+            res.status(401).send('Username or Password invalid.');
+        }else{
+            const hasAccepted = await PRIME_acceptBookings(page, numBookings);
+            if(hasAccepted.error){
+                res.status(401).send(hasAccepted.message);
+            }else{
+                res.status(200).send(hasAccepted.message);
+            }
+        }
+
+        await page.close();
+        await browser.close();
+    
+    }
+});
+
+app.get('/cv-prime/meetings', async (req, res) => {
+    const {token, userName, password} = req.query;
+    
+    if(token !== SERVER_TOKEN){
+        res.status(401).send('Token is missing or not valid.');
+    }else if(!userName || !password){
+        res.status(401).send('Username or Password missing.');
+    }else{
+
+        const browser = await puppeteer.launch();
+        console.log("Browser opened.");
+        const page = await browser.newPage();
+
+        const urlAfterLogin = await PRIME_logIn(page, userName, password);
+        if(urlAfterLogin === 'https://coworking.prime.cv/web/login'){
+            res.status(401).send('Username or Password invalid.');
+        }else{
+            console.log(`${userName} logged in.`);
+            const meetings = await PRIME_getMeetings(page);
+            res.status(200).send(meetings);
+        }
+
+        await page.close();
+        await browser.close();
+    
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server started on PORT ${PORT}.`);
 });
-
-//RUNTIME
-const runtime = (minutes) => {
-    const milliseconds = minutes * 60 * 1000;
-    console.log('Runtiming...');
-    setTimeout(()=>{
-        runtime(milliseconds);
-    }, milliseconds);
-}
