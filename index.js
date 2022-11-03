@@ -34,7 +34,11 @@ app.get('/cv-assets/:bank', (req, res) => {
         const bankFunction = bank === 'bcn' ? getBCNAssets : getCAIXAAssets;
         bankFunction(userName, password)
         .then(assets => {
-            res.status(200).send(assets);
+            const splittedAssets = assets.replaceAll('.','').replaceAll(',','').split(' ');
+            res.status(200).send({
+                value: splittedAssets[0]/100,
+                currency: splittedAssets[1]
+            });
         })
         .catch(err => {
             res.status(401).send('Username or Password invalid.');
