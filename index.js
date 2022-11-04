@@ -4,6 +4,8 @@ const express = require('express');
 const puppeteer = require('puppeteer');
 const cors = require('cors')
 const app = express();
+const fs = require('fs');
+const moment = require('moment');
 const {getBCNAssets, getCAIXAAssets} = require('./cv-banks');
 const {PRIME_logIn, PRIME_bookDays, PRIME_acceptBookings, PRIME_getMeetings} = require('./cv-prime');
 
@@ -14,6 +16,18 @@ const PORT = process.env.PORT || 8080;
 const { SERVER_TOKEN } = process.env;
 
 //FUNCTIONS
+const writeJSONFile = (file, path) => {
+    fs.writeFileSync(path, JSON.stringify(file, null, 2), (err) => {
+        if(err){console.error(err);}
+    });
+}
+const readJSONFile = (path) => {
+    if(!fs.existsSync(path)){return null}
+    const file = fs.readFileSync(path, (err)=>{
+        if(err){console.error(err)}
+    });
+    return JSON.parse(file);
+}
 
 //API
 app.use(cors());
@@ -23,12 +37,45 @@ app.get('/test', (req, res) => {
     res.status(200).send('API is online.');
 });
 
+app.post('/connection', (req, res) => {
+    if(req.err){
+        console.log("There was a failure in POST /connection", req.err); 
+        res.status(200).send(true);
+        return;
+    }
+    const path = `./database/connections/connection-log.${req.body.visitorId}.json`;
+    let connectionLog = readJSONFile(path) || [];
+    const {headers, ip, body} = req;
+    connectionLog = [...connectionLog, {
+        headers, 
+        ip, 
+        fingerPrint: {
+            localStorage: body?.localStorage,
+            visitorId: body?.visitorId,
+            confidence: body?.confidence?.score,
+            osCpu: body?.components?.osCpu?.value,
+            languages: body?.components?.languages?.value,
+            timeZone: body?.components?.timeZone?.value,
+            screenResolution: body?.components?.screenResolution?.value,
+            vendor: body?.components?.vendor?.value,
+            platform: body?.components?.platform?.value,
+        }, 
+        timeStamp: Date.now(), 
+        date: moment(Date.now()).format("DD/MM/YYYY HH:mm:ss"),
+    }];
+    if(connectionLog.length > 100){
+        connectionLog.shift();
+    }
+    writeJSONFile(connectionLog, path);
+    res.status(200).send(true);
+});
+
 app.get('/cv-assets/:bank', (req, res) => {
     const {userName, password, token} = req.query;
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
     }else if(!userName || !password){
-        res.status(401).send('Username or Password missing.');
+        res.status(401).send('Username or Password is missing.');
     }else{
         const {bank} = req.params;
         const bankFunction = bank === 'bcn' ? getBCNAssets : getCAIXAAssets;
@@ -41,7 +88,7 @@ app.get('/cv-assets/:bank', (req, res) => {
             });
         })
         .catch(err => {
-            res.status(401).send('Username or Password invalid.');
+            res.status(401).send('Username or Password is invalid.');
             console.log(err);
         })
     }
@@ -53,7 +100,7 @@ app.get('/cv-prime/book', async (req, res) => {
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
     }else if(!userName || !password){
-        res.status(401).send('Username or Password missing.');
+        res.status(401).send('Username or Password is missing.');
     }else if(!numDays || numDays <= 0 || numDays > 30){
         res.status(401).send('The number of days has to be between 1 and 30.');
     }else{
@@ -99,7 +146,7 @@ app.get('/cv-prime/accept-invitations', async (req, res) => {
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
     }else if(!userName || !password){
-        res.status(401).send('Username or Password missing.');
+        res.status(401).send('Username or Password si missing.');
     }else if(!numBookings || numBookings <= 0){
         res.status(401).send('The number of bookings has to be greater than 0.');
     }else{
@@ -113,7 +160,7 @@ app.get('/cv-prime/accept-invitations', async (req, res) => {
 
         const urlAfterLogin = await PRIME_logIn(page, userName, password);
         if(urlAfterLogin === 'https://coworking.prime.cv/web/login'){
-            res.status(401).send('Username or Password invalid.');
+            res.status(401).send('Username or Password is invalid.');
         }else{
             const hasAccepted = await PRIME_acceptBookings(page, numBookings);
             if(hasAccepted.error){
@@ -135,7 +182,7 @@ app.get('/cv-prime/meetings', async (req, res) => {
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
     }else if(!userName || !password){
-        res.status(401).send('Username or Password missing.');
+        res.status(401).send('Username or Password is missing.');
     }else{
 
         const browser = await puppeteer.launch({
@@ -147,7 +194,7 @@ app.get('/cv-prime/meetings', async (req, res) => {
 
         const urlAfterLogin = await PRIME_logIn(page, userName, password);
         if(urlAfterLogin === 'https://coworking.prime.cv/web/login'){
-            res.status(401).send('Username or Password invalid.');
+            res.status(401).send('Username or Password is invalid.');
         }else{
             console.log(`${userName} logged in.`);
             const meetings = await PRIME_getMeetings(page);

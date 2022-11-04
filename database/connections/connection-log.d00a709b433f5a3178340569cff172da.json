@@ -1,0 +1,102 @@
+[
+  {
+    "headers": {
+      "host": "localhost:8080",
+      "connection": "keep-alive",
+      "content-length": "23233",
+      "pragma": "no-cache",
+      "cache-control": "no-cache",
+      "sec-ch-ua": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\"",
+      "accept": "application/json, text/plain, */*",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "origin": "http://localhost:3000",
+      "sec-fetch-site": "same-site",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "referer": "http://localhost:3000/",
+      "accept-encoding": "gzip, deflate, br",
+      "accept-language": "en-US,en;q=0.9,it-IT;q=0.8,it;q=0.7",
+      "sec-gpc": "1"
+    },
+    "ip": "::1",
+    "fingerPrint": {
+      "localStorage": {
+        "bankAssets": "{\"bcn\":{\"value\":\"0\",\"currency\":\"CVE\"},\"caixa\":{\"value\":\"0\",\"currency\":\"CVE\"}}",
+        "version": "\"0.1\"",
+        "meetings": "[]",
+        "last-meeting-update": "1667582051390",
+        "last-bank-update": "1667582054392",
+        "privateData": "[{\"name\":\"bcn\",\"enabled\":true,\"form\":[{\"name\":\"username\",\"type\":\"text\",\"value\":\"\"},{\"name\":\"password\",\"type\":\"text\",\"value\":\"\"}]},{\"name\":\"caixa\",\"enabled\":false,\"form\":[{\"name\":\"username\",\"type\":\"text\",\"value\":\"\"},{\"name\":\"password\",\"type\":\"text\",\"value\":\"\"}]},{\"name\":\"prime\",\"enabled\":false,\"form\":[{\"name\":\"username\",\"type\":\"text\",\"value\":\"\"},{\"name\":\"password\",\"type\":\"text\",\"value\":\"\"}]}]",
+        "ally-supports-cache": false
+      },
+      "visitorId": "d00a709b433f5a3178340569cff172da",
+      "confidence": 0.6,
+      "languages": [
+        [
+          "en-US"
+        ]
+      ],
+      "screenResolution": [
+        1920,
+        1080
+      ],
+      "vendor": "Google Inc.",
+      "platform": "Win32"
+    },
+    "timeStamp": 1667582337712,
+    "date": "04/11/2022 16:18:57"
+  },
+  {
+    "headers": {
+      "host": "localhost:8080",
+      "connection": "keep-alive",
+      "content-length": "23233",
+      "pragma": "no-cache",
+      "cache-control": "no-cache",
+      "sec-ch-ua": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\"",
+      "accept": "application/json, text/plain, */*",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "origin": "http://localhost:3000",
+      "sec-fetch-site": "same-site",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "referer": "http://localhost:3000/",
+      "accept-encoding": "gzip, deflate, br",
+      "accept-language": "en-US,en;q=0.9,it-IT;q=0.8,it;q=0.7",
+      "sec-gpc": "1"
+    },
+    "ip": "::1",
+    "fingerPrint": {
+      "localStorage": {
+        "bankAssets": "{\"bcn\":{\"value\":\"0\",\"currency\":\"CVE\"},\"caixa\":{\"value\":\"0\",\"currency\":\"CVE\"}}",
+        "version": "\"0.1\"",
+        "meetings": "[]",
+        "last-meeting-update": "1667582051390",
+        "last-bank-update": "1667582373760",
+        "privateData": "[{\"name\":\"bcn\",\"enabled\":true,\"form\":[{\"name\":\"username\",\"type\":\"text\",\"value\":\"\"},{\"name\":\"password\",\"type\":\"text\",\"value\":\"\"}]},{\"name\":\"caixa\",\"enabled\":false,\"form\":[{\"name\":\"username\",\"type\":\"text\",\"value\":\"\"},{\"name\":\"password\",\"type\":\"text\",\"value\":\"\"}]},{\"name\":\"prime\",\"enabled\":false,\"form\":[{\"name\":\"username\",\"type\":\"text\",\"value\":\"\"},{\"name\":\"password\",\"type\":\"text\",\"value\":\"\"}]}]",
+        "ally-supports-cache": false
+      },
+      "visitorId": "d00a709b433f5a3178340569cff172da",
+      "confidence": 0.6,
+      "languages": [
+        [
+          "en-US"
+        ]
+      ],
+      "screenResolution": [
+        1920,
+        1080
+      ],
+      "vendor": "Google Inc.",
+      "platform": "Win32"
+    },
+    "timeStamp": 1667582533541,
+    "date": "04/11/2022 16:22:13"
+  }
+]
