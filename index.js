@@ -37,21 +37,20 @@ app.get('/test', (req, res) => {
     res.status(200).send('API is online.');
 });
 
-let convertBrowser;
 app.get('/convert', async (req, res) => {
     const {token, amount, from, to} = req.query;
     
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
-    }else if(!convertBrowser){
-        convertBrowser = await puppeteer.launch({
+    }else{
+
+        const browser = await puppeteer.launch({
             headless: true,
             args: ['--no-sandbox']
         });
-    }{
+        console.log("Browser opened.");
 
-        const page = await convertBrowser.newPage();
-        console.log("Page opened.");
+        const page = await browser.newPage();
 
         const url = `https://www.xe.com/currencyconverter/convert/?Amount=${amount}&From=${from.toUpperCase()}&To=${to.toUpperCase()}`;
 
@@ -67,7 +66,9 @@ app.get('/convert', async (req, res) => {
 
         await page.close();
 
-        console.log("Page closed.");
+        await browser.close();
+
+        console.log("Browser closed.");
 
     }
 });
