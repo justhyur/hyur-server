@@ -61,7 +61,7 @@ app.get('/convert', async (req, res) => {
 
         const url = `https://www.xe.com/currencyconverter/convert/?Amount=${amount}&From=${from.toUpperCase()}&To=${to.toUpperCase()}`;
 
-        await page.goto(url);
+        await page.goto(url, {waitUntil: 'load', timeout: 0});
 
         let result = await page.evaluate(()=>{
             const el = document.querySelector('.faded-digits').parentElement;
