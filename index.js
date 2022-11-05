@@ -37,12 +37,19 @@ app.get('/test', (req, res) => {
     res.status(200).send('API is online.');
 });
 
+const conversionRates = readJSONFile('./database/conversion-rate.json') || {};
 app.get('/convert', async (req, res) => {
     const {token, amount, from, to} = req.query;
     
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
     }else{
+
+        const rate = conversionRates[from+to] ?? conversionRates[to+from];
+        if(rate && (Date.now() - rate.date) / 1000 / 60 < 10 ){
+            res.status(200).send(rate.from === from ? rate.result : (1/Number(rate.result)).toString());
+            return;
+        }
 
         const browser = await puppeteer.launch({
             headless: true,
@@ -60,7 +67,14 @@ app.get('/convert', async (req, res) => {
             const el = document.querySelector('.faded-digits').parentElement;
             el.childNodes[2].remove();
             return el.innerText;
-        })
+        });
+
+        conversionRates[from+to] = {
+            date: Date.now(),
+            from, to,
+            result
+        }
+        writeJSONFile(conversionRates, './database/conversion-rate.json');
 
         res.status(200).send(result);
 
