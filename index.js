@@ -74,7 +74,6 @@ app.get('/convert', async (req, res) => {
             from, to,
             result
         }
-        console.log(conversionRates);
         writeJSONFile(conversionRates, './database/conversion-rate.json');
 
         res.status(200).send(result);
@@ -97,7 +96,7 @@ app.post('/connection', (req, res) => {
     const path = `./database/connections/connection-log.${req.body.visitorId}.json`;
     let connectionLog = readJSONFile(path) || [];
     const {headers, ip, body} = req;
-    connectionLog = [...connectionLog, {
+    connectionLog = [{
         headers, 
         ip, 
         fingerPrint: {
@@ -110,14 +109,16 @@ app.post('/connection', (req, res) => {
             screenResolution: body?.components?.screenResolution?.value,
             vendor: body?.components?.vendor?.value,
             platform: body?.components?.platform?.value,
+            react_app_pathname: body?.pathname,
         }, 
         timeStamp: Date.now(), 
         date: moment(Date.now()).format("DD/MM/YYYY HH:mm:ss"),
-    }];
+    }, ...connectionLog];
     if(connectionLog.length > 100){
         connectionLog.shift();
     }
     writeJSONFile(connectionLog, path);
+    console.log(`${body?.visitorId} tracked on ${body?.pathname}`)
     res.status(200).send(true);
 });
 
