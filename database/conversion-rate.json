@@ -4,5 +4,23 @@
     "from": "cve",
     "to": "eur",
     "result": "0.0090686497"
+  },
+  "CVEEUR": {
+    "date": 1667678710030,
+    "from": "CVE",
+    "to": "EUR",
+    "result": "0.0090686497"
+  },
+  "EURUSD": {
+    "date": 1667678715130,
+    "from": "EUR",
+    "to": "USD",
+    "result": "0.99665634"
+  },
+  "CVEUSD": {
+    "date": 1667678714762,
+    "from": "CVE",
+    "to": "USD",
+    "result": "0.0090383272"
   }
 }
