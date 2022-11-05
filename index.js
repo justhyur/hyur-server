@@ -37,6 +37,41 @@ app.get('/test', (req, res) => {
     res.status(200).send('API is online.');
 });
 
+let convertBrowser;
+app.get('/convert', async (req, res) => {
+    const {token, amount, from, to} = req.query;
+    
+    if(token !== SERVER_TOKEN){
+        res.status(401).send('Token is missing or not valid.');
+    }else if(!convertBrowser){
+        convertBrowser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox']
+        });
+    }{
+
+        const page = await convertBrowser.newPage();
+        console.log("Page opened.");
+
+        const url = `https://www.xe.com/currencyconverter/convert/?Amount=${amount}&From=${from.toUpperCase()}&To=${to.toUpperCase()}`;
+
+        await page.goto(url);
+
+        let result = await page.evaluate(()=>{
+            const el = document.querySelector('.faded-digits').parentElement;
+            el.childNodes[2].remove();
+            return el.innerText;
+        })
+
+        res.status(200).send(result);
+
+        await page.close();
+
+        console.log("Page closed.");
+
+    }
+});
+
 app.post('/connection', (req, res) => {
     if(req.err){
         console.log("There was a failure in POST /connection", req.err); 
@@ -81,15 +116,12 @@ app.get('/cv-assets/:bank', (req, res) => {
         const bankFunction = bank === 'bcn' ? getBCNAssets : getCAIXAAssets;
         bankFunction(userName, password)
         .then(assets => {
-            const splittedAssets = assets.replaceAll('.','').replaceAll(',','').split(' ');
-            res.status(200).send({
-                value: splittedAssets[0]/100,
-                currency: splittedAssets[1]
-            });
+            // 
+            res.status(200).send(assets);
         })
         .catch(err => {
-            res.status(401).send('Username or Password is invalid.');
-            console.log(err);
+            res.status(401).send(err.message);
+            console.log(err.message);
         })
     }
 });
@@ -136,6 +168,8 @@ app.get('/cv-prime/book', async (req, res) => {
 
         await page.close();
         await browser.close();
+
+        console.log("Browser closed.");
     
     }
 });
@@ -172,6 +206,8 @@ app.get('/cv-prime/accept-invitations', async (req, res) => {
 
         await page.close();
         await browser.close();
+
+        console.log("Browser closed.");
     
     }
 });
@@ -203,6 +239,8 @@ app.get('/cv-prime/meetings', async (req, res) => {
 
         await page.close();
         await browser.close();
+
+        console.log("Browser closed.");
     
     }
 });
