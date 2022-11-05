@@ -74,6 +74,7 @@ app.get('/convert', async (req, res) => {
             from, to,
             result
         }
+        console.log(conversionRates);
         writeJSONFile(conversionRates, './database/conversion-rate.json');
 
         res.status(200).send(result);
