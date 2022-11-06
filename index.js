@@ -108,6 +108,22 @@ app.get('/connection', (req, res) => {
     }
 });
 
+app.delete('/connection', (req, res) => {
+    const {token, fileName} = req.query;
+    if(token !== SERVER_TOKEN){
+        res.status(401).send('Token is missing or not valid.');
+    }else{
+        const path = `./database/connections/connection-log.${fileName}.json`;
+        if(fs.existsSync(path)){
+            fs.unlinkSync(path);
+            res.status(200).send(true);
+            console.log(`${fileName} deleted successfully.`);
+        }else{
+            res.status(400).send("File not existing.");
+        }
+    }
+});
+
 app.post('/connection', (req, res) => {
     if(req.err){
         console.log("There was a failure in POST /connection", req.err); 
