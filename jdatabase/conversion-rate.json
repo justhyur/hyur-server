@@ -1,0 +1,26 @@
+{
+  "cveeur": {
+    "date": 1667678352388,
+    "from": "cve",
+    "to": "eur",
+    "result": "0.0090686497"
+  },
+  "CVEEUR": {
+    "date": 1667683240113,
+    "from": "CVE",
+    "to": "EUR",
+    "result": "0.0090686497"
+  },
+  "EURUSD": {
+    "date": 1667683237122,
+    "from": "EUR",
+    "to": "USD",
+    "result": "0.99704097"
+  },
+  "CVEUSD": {
+    "date": 1667683235490,
+    "from": "CVE",
+    "to": "USD",
+    "result": "0.0090418153"
+  }
+}
