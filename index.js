@@ -6,6 +6,7 @@ const cors = require('cors')
 const app = express();
 const fs = require('fs');
 const moment = require('moment');
+const dirTree = require("directory-tree");
 const {getBCNAssets, getCAIXAAssets} = require('./cv-banks');
 const {PRIME_logIn, PRIME_bookDays, PRIME_acceptBookings, PRIME_getMeetings} = require('./cv-prime');
 
@@ -84,6 +85,26 @@ app.get('/convert', async (req, res) => {
 
         console.log("Browser closed.");
 
+    }
+});
+
+app.get('/connections', (req, res) => {
+    const {token} = req.query;
+    if(token !== SERVER_TOKEN){
+        res.status(401).send('Token is missing or not valid.');
+    }else{
+        const tree = dirTree('./database/connections');
+        res.status(200).send(tree);
+    }
+});
+
+app.get('/connection', (req, res) => {
+    const {token, fileName} = req.query;
+    if(token !== SERVER_TOKEN){
+        res.status(401).send('Token is missing or not valid.');
+    }else{
+        const file = readJSONFile(`./database/connections/connection-log.${fileName}.json`);
+        res.status(200).send(file.sort((a,b)=>moment(a.date, "DD/MM/YYYY HH:mm:ss")>moment(b.date, "DD/MM/YYYY HH:mm:ss")?-1:1));
     }
 });
 
