@@ -37,6 +37,14 @@ const origin = [
     'https://cv-connections-viewer.vercel.app', 
 ]
 if(ALLOW_LOCALHOST){origin.push('http://localhost:3000')}
+
+if(!fs.existsSync('./jdatabase')){
+    fs.mkdirSync('./jdatabase');
+}
+if(!fs.existsSync('./jdatabase/connections')){
+    fs.mkdirSync('./jdatabase/connections');
+}
+
 app.use(cors());
 app.use(express.json());
 
