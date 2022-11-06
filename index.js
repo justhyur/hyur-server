@@ -14,7 +14,7 @@ dotenv.config();
 
 //GLOBALS
 const PORT = process.env.PORT || 8080;
-const { SERVER_TOKEN } = process.env;
+const { SERVER_TOKEN, ALLOW_LOCALHOST } = process.env;
 
 //FUNCTIONS
 const writeJSONFile = (file, path) => {
@@ -31,7 +31,13 @@ const readJSONFile = (path) => {
 }
 
 //API
-app.use(cors());
+const origin = [
+    'https://cv-helper.vercel.app', 
+    'https://cv-helper-app.vercel.app', 
+    'https://cv-connections-viewer.vercel.app', 
+]
+if(ALLOW_LOCALHOST){origin.push('http://localhost:3000')}
+app.use(cors({origin}));
 app.use(express.json());
 
 app.get('/test', (req, res) => {
