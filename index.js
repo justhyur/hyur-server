@@ -44,7 +44,7 @@ app.get('/test', (req, res) => {
     res.status(200).send('API is online.');
 });
 
-const conversionRates = readJSONFile('./database/conversion-rate.json') || {};
+const conversionRates = readJSONFile('./jdatabase/conversion-rate.json') || {};
 app.get('/convert', async (req, res) => {
     const {token, amount, from, to} = req.query;
     
@@ -81,7 +81,7 @@ app.get('/convert', async (req, res) => {
             from, to,
             result
         }
-        writeJSONFile(conversionRates, './database/conversion-rate.json');
+        writeJSONFile(conversionRates, './jdatabase/conversion-rate.json');
 
         res.status(200).send(result);
 
@@ -99,7 +99,7 @@ app.get('/connections', (req, res) => {
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
     }else{
-        const tree = dirTree('./database/connections');
+        const tree = dirTree('./jdatabase/connections');
         res.status(200).send(tree);
     }
 });
@@ -109,7 +109,7 @@ app.get('/connection', (req, res) => {
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
     }else{
-        const file = readJSONFile(`./database/connections/connection-log.${fileName}.json`);
+        const file = readJSONFile(`./jdatabase/connections/connection-log.${fileName}.json`);
         res.status(200).send(file.sort((a,b)=>moment(a.date, "DD/MM/YYYY HH:mm:ss")>moment(b.date, "DD/MM/YYYY HH:mm:ss")?-1:1));
     }
 });
@@ -119,7 +119,7 @@ app.delete('/connection', (req, res) => {
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
     }else{
-        const path = `./database/connections/connection-log.${fileName}.json`;
+        const path = `./jdatabase/connections/connection-log.${fileName}.json`;
         if(fs.existsSync(path)){
             fs.unlinkSync(path);
             res.status(200).send(true);
@@ -136,7 +136,7 @@ app.post('/connection', (req, res) => {
         res.status(200).send(true);
         return;
     }
-    const path = `./database/connections/connection-log.${req.body.visitorId}.json`;
+    const path = `./jdatabase/connections/connection-log.${req.body.visitorId}.json`;
     let connectionLog = readJSONFile(path) || [];
     const {headers, ip, body} = req;
     connectionLog = [{

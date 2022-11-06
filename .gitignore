@@ -1,5 +1,7 @@
 # Logs
 node_modules
+jdatabase
+screenshots
 logs
 *.log
 npm-debug.log*
@@ -106,6 +108,3 @@ dist
 
 # Local Netlify folder
 .netlify
-
-database
-screenshots
