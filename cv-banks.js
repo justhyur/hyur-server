@@ -86,7 +86,7 @@ const getBCNAssets = async (userName, password) => {
             movements[r] = {};
             [].slice.call(tr.children).forEach( td => {
                 const dataTitle = td.getAttribute("data-title");
-                const key = dataTitle === 'Oper. date'? 'date' :
+                const key = dataTitle === 'Value date'? 'date' :
                             dataTitle === 'Description'? 'description' :
                             dataTitle === 'Value'? 'amount' : null;
                 if(key){
