@@ -37,7 +37,7 @@ const origin = [
     'https://cv-connections-viewer.vercel.app', 
 ]
 if(ALLOW_LOCALHOST){origin.push('http://localhost:3000')}
-app.use(cors({origin}));
+app.use(cors());
 app.use(express.json());
 
 app.get('/test', (req, res) => {
