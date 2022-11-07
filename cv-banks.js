@@ -103,6 +103,7 @@ const getBCNAssets = async (userName, password) => {
     assets.movements.forEach(m => {
         m.amount = deFormat(m.amount)
     });
+    assets.movements.reverse();
 
     await browser.close();
     console.log("BCN Page closed.");
@@ -144,7 +145,7 @@ const getCAIXAAssets = async (userName, password) => {
     const assets = await page.evaluate(() => {
         
         const accountNumber = document.querySelector("#master-col > div > div > div:nth-child(1) > div > div > div > div.list-item.shadow.bg-primary.px-4.py-3.active-account > div.row > div.col-12.col-lg-3.pt-3.account-number > span").innerText;
-        const accounting = document.querySelector("#master-col > div > div > div.col-12.my-2.js--account-details-info > div > div > div > div.row.font-size-xs.pt-2 > div.col-12.col-xl-8 > div > div.col-12.col-sm-6.order-7 > div > div.col.text-right.text-primary > span").innerText;
+        const accounting = document.querySelector("#master-col > div > div > div.col-12.my-2.js--account-details-info > div > div > div > div.row.font-size-xs.pt-2 > div.col-12.col-xl-8 > div > div.col-12.col-sm-6.order-6.order-sm-5 > div > div.col.text-right.text-primary > span").innerText;
         const available = document.querySelector("#master-col > div > div > div.col-12.my-2.js--account-details-info > div > div > div > div.row.font-size-xs.pt-2 > div.col-12.col-xl-8 > div > div.col-12.col-sm-6.order-8.order-sm-9 > div > div.col.text-right.text-primary > span").innerText;
         const movements = [];
         const tbody = document.querySelector("#master-col > div > div > div:nth-child(4) > div > div > div > div.row.flex-grow-1 > div > div");
