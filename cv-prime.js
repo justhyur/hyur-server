@@ -13,8 +13,16 @@ const PRIME_logIn = async (page, userName, password) => {
     return currentUrl;
 }
 
-const PRIME_bookDays = async (page, branchCode, timeStamp, numDays, numMinutes) => {
-    const startDate = moment(parseInt(timeStamp));
+function delay(time) {
+    return new Promise(function(resolve) { 
+        setTimeout(resolve, time)
+    });
+ }
+
+const PRIME_bookDays = async (page, branchCode, timeStamp, numDays, numMinutes, skipWeekends) => {
+    numDays = parseInt(numDays);
+    numMinutes = parseInt(numMinutes);
+    let startDate = moment(parseInt(timeStamp));
     const endTime = moment(parseInt(timeStamp)).add(numMinutes, 'minutes');
     const timeString = `${startDate.format("HH:mm")} - ${endTime.format("HH:mm")}`;
     if(startDate.format("HH") > endTime.format("HH")){
@@ -23,31 +31,69 @@ const PRIME_bookDays = async (page, branchCode, timeStamp, numDays, numMinutes) 
             message: "You can't book a time interval that goes between two days."
         }
     }
-    let bookedDays = 0;
+    const logs = [];
+    const slots = [];
+    
+    while(startDate.format("HH:mm") !== endTime.format("HH:mm")){
+        const startHour = startDate.format("HH:mm");
+        startDate.add(15, "minutes");
+        slots.push(`${startHour} - ${startDate.format("HH:mm")}`);
+    }
     for(let i=0; i<numDays; i++){
         startDate.add(i ? 1 : 0, 'days');
         const dateName = startDate.format('YYYY-MM-DD');
         const weekDay = startDate.format('dddd');
-        if(weekDay !== 'Saturday' && weekDay !== 'Sunday'){
+        const finalTimeStamp = moment(`${startDate.format("DD/MM/YYYY")} ${timeString}`, "DD/MM/YYYY HH:mm").toDate().getTime();
+        if(skipWeekends === 'false' || (skipWeekends && weekDay !== 'Saturday' && weekDay !== 'Sunday')){
             await page.goto('https://coworking.prime.cv/schedule', {waitUntil: 'networkidle2', timeout: 0});
-            await page.evaluate(({branchCode, dateName, numMinutes, timeString}) => {
-                document.querySelector("#employee").value = branchCode.toString();
+            await page.evaluate(dateName => {
                 document.querySelector("#meeting_date").value = dateName;
-                document.querySelector("#fifteen_minutes").value = numMinutes.toString();
-                document.querySelector("#timeslot > option:nth-child(1)").value = timeString;
-                document.querySelector("#schedule_meeting_form > div > div.form-group.col-12.s_website_form_submit > a.btn.btn-primary.btn-lg.s_website_form_send").click();
-            }, {branchCode, dateName, numMinutes, timeString});
-            await page.waitForNavigation({waitUntil: 'networkidle0',});
-            console.log(`${dateName} | ${timeString} booked.`);
-            bookedDays++;
+            }, dateName);
+            await page.select("#employee", branchCode.toString());
+            await delay(250);
+            await page.screenshot({ path: './screenshots/test.png' })
+            const availableSlots = await page.evaluate(() => {
+                return [].slice.call(document.querySelector("#timeslot").children).map(o=>o.value);
+            });
+            let isBookable = true;
+            slots.forEach(s=>{
+                if(!availableSlots.includes(s)){
+                    isBookable = false;
+                }
+            });
+            if(isBookable){
+                await page.evaluate(({numMinutes, timeString}) => {
+                    document.querySelector("#fifteen_minutes").value = numMinutes.toString();
+                    document.querySelector("#timeslot > option:nth-child(1)").value = timeString;
+                    document.querySelector("#schedule_meeting_form > div > div.form-group.col-12.s_website_form_submit > a.btn.btn-primary.btn-lg.s_website_form_send").click();
+                }, {numMinutes, timeString});
+                await page.waitForNavigation({waitUntil: 'networkidle0',});
+                logs.push({
+                    booked: true,
+                    date: finalTimeStamp,
+                    message: `Booked successfully.`
+                });
+            }else{
+                logs.push({
+                    booked: false,
+                    date: finalTimeStamp,
+                    message: `Not booked: it's already booked.`
+                });
+            }
+            
         }else{
-            console.log(`Not booking ${dateName} because it's a ${weekDay}.`);
+            logs.push({
+                booked: false,
+                date: finalTimeStamp,
+                message: `Not booked: it's a ${weekDay}.`
+            });
         }
     }
-    return bookedDays;
+    return logs;
 }
 
 const PRIME_acceptBookings = async (page, numBookings) => {
+    console.log(numBookings)
     await page.goto('https://coworking.prime.cv/meetings/my/all_meetings', {waitUntil: 'networkidle2', timeout: 0});
     let acceptedBookings = 0;
     for(let i=0; i<numBookings; i++){
@@ -70,9 +116,9 @@ const PRIME_acceptBookings = async (page, numBookings) => {
                 message: `Accepted bookings: ${acceptedBookings}. There was nothing to accept after request n°${i+1}`
             }
         }
-        return {
-            message: `Accepted bookings: ${acceptedBookings}.`
-        }
+    }
+    return {
+        message: `Accepted bookings: ${acceptedBookings}.`
     }
 }
 
@@ -84,7 +130,7 @@ const PRIME_getMeetings = async (page) => {
         [].slice.call(tbody.children).forEach((tr, i) => {
             const tds = tr.children;
             meetings[i] = {};
-            meetings[i].branch = tds[0].innerText.trim();
+            meetings[i].branch = tds[0].innerText.replace('01', '').trim();
             meetings[i].date = tds[1].innerText.replace("Today",'').trim();
             meetings[i].time = tds[2].innerText.trim();
             meetings[i].duration = tds[3].innerText.trim();

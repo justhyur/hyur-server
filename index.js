@@ -102,77 +102,6 @@ app.get('/convert', async (req, res) => {
     }
 });
 
-app.get('/connections', (req, res) => {
-    const {token} = req.query;
-    if(token !== SERVER_TOKEN){
-        res.status(401).send('Token is missing or not valid.');
-    }else{
-        const tree = dirTree('./jdatabase/connections');
-        res.status(200).send(tree);
-    }
-});
-
-app.get('/connection', (req, res) => {
-    const {token, fileName} = req.query;
-    if(token !== SERVER_TOKEN){
-        res.status(401).send('Token is missing or not valid.');
-    }else{
-        const file = readJSONFile(`./jdatabase/connections/connection-log.${fileName}.json`);
-        res.status(200).send(file.sort((a,b)=>moment(a.date, "DD/MM/YYYY HH:mm:ss")>moment(b.date, "DD/MM/YYYY HH:mm:ss")?-1:1));
-    }
-});
-
-app.delete('/connection', (req, res) => {
-    const {token, fileName} = req.query;
-    if(token !== SERVER_TOKEN){
-        res.status(401).send('Token is missing or not valid.');
-    }else{
-        const path = `./jdatabase/connections/connection-log.${fileName}.json`;
-        if(fs.existsSync(path)){
-            fs.unlinkSync(path);
-            res.status(200).send(true);
-            console.log(`${fileName} deleted successfully.`);
-        }else{
-            res.status(400).send("File not existing.");
-        }
-    }
-});
-
-app.post('/connection', (req, res) => {
-    if(req.err){
-        console.log("There was a failure in POST /connection", req.err); 
-        res.status(200).send(true);
-        return;
-    }
-    const path = `./jdatabase/connections/connection-log.${req.body.visitorId}.json`;
-    let connectionLog = readJSONFile(path) || [];
-    const {headers, ip, body} = req;
-    connectionLog = [{
-        headers, 
-        ip, 
-        fingerPrint: {
-            localStorage: body?.localStorage,
-            visitorId: body?.visitorId,
-            confidence: body?.confidence?.score,
-            osCpu: body?.components?.osCpu?.value,
-            languages: body?.components?.languages?.value,
-            timeZone: body?.components?.timeZone?.value,
-            screenResolution: body?.components?.screenResolution?.value,
-            vendor: body?.components?.vendor?.value,
-            platform: body?.components?.platform?.value,
-            react_app_pathname: body?.pathname,
-        }, 
-        timeStamp: Date.now(), 
-        date: moment(Date.now()).format("DD/MM/YYYY HH:mm:ss"),
-    }, ...connectionLog];
-    if(connectionLog.length > 100){
-        connectionLog.shift();
-    }
-    writeJSONFile(connectionLog, path);
-    console.log(`${body?.visitorId} tracked on ${body?.pathname}`)
-    res.status(200).send(true);
-});
-
 app.get('/cv-assets/:bank', (req, res) => {
     const {userName, password, token} = req.query;
     if(token !== SERVER_TOKEN){
@@ -195,7 +124,7 @@ app.get('/cv-assets/:bank', (req, res) => {
 });
 
 app.get('/cv-prime/book', async (req, res) => {
-    const {token, userName, password, branchCode, timeStamp, numDays, numMinutes, acceptBookings} = req.query;
+    const {token, userName, password, branchCode, timeStamp, numDays, numMinutes, acceptBookings, skipWeekends} = req.query;
     
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
@@ -204,7 +133,6 @@ app.get('/cv-prime/book', async (req, res) => {
     }else if(!numDays || numDays <= 0 || numDays > 30){
         res.status(401).send('The number of days has to be between 1 and 30.');
     }else{
-
         const browser = await puppeteer.launch({
             headless: true,
             args: ['--no-sandbox']
@@ -217,19 +145,31 @@ app.get('/cv-prime/book', async (req, res) => {
             res.status(401).send('Username or Password invalid.');
         }else{
             console.log(`${userName} logged in.`);
-            const bookedDays = await PRIME_bookDays(page, branchCode, timeStamp, numDays, numMinutes);
+            const bookedDays = await PRIME_bookDays(page, branchCode, timeStamp, numDays, numMinutes, skipWeekends);
             if(bookedDays.error){
                 res.status(401).send(bookedDays.message);
             }else{
-                if(bookedDays > 0 && acceptBookings.toString() === 'true'){
-                    const hasAccepted = await PRIME_acceptBookings(page, bookedDays);
+                if(bookedDays.filter(b=>b.booked).length > 0 && acceptBookings.toString() === 'true'){
+                    const hasAccepted = await PRIME_acceptBookings(page, bookedDays.filter(b=>b.booked).length);
                     if(hasAccepted.error){
                         res.status(401).send(hasAccepted.message);
                     }else{
-                        res.status(200).send(`${bookedDays} days booked. ${hasAccepted.message}`);
+                        let meetings = false;
+                        let atLeastOne = false;
+                        for(let i=0; i<bookedDays.length; i++){if(bookedDays[i].booked){atLeastOne=true; break;}}
+                        if(atLeastOne){
+                            meetings = await PRIME_getMeetings(page);
+                        }
+                        res.status(200).send({bookedDays, meetings});
                     }
                 }else{
-                    res.status(200).send(`${bookedDays} days booked. Those days invitations were not accepted.`)
+                    let meetings = false;
+                    let atLeastOne = false;
+                    for(let i=0; i<bookedDays.length; i++){if(bookedDays[i].booked){atLeastOne=true; break;}}
+                    if(atLeastOne){
+                        meetings = await PRIME_getMeetings(page);
+                    }
+                    res.status(200).send({bookedDays, meetings});
                 }
             }
         }
