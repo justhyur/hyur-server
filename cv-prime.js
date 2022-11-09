@@ -51,7 +51,6 @@ const PRIME_bookDays = async (page, branchCode, timeStamp, numDays, numMinutes, 
             }, dateName);
             await page.select("#employee", branchCode.toString());
             await delay(250);
-            await page.screenshot({ path: './screenshots/test.png' })
             const availableSlots = await page.evaluate(() => {
                 return [].slice.call(document.querySelector("#timeslot").children).map(o=>o.value);
             });
