@@ -147,18 +147,20 @@ const getCAIXAAssets = async (userName, password) => {
         const movements = [];
         const tbody = document.querySelector("#master-col > div > div > div:nth-child(4) > div > div > div > div.row.flex-grow-1 > div > div");
         [].slice.call(tbody.children).forEach( (el, r) => {
-            const tr = el.children[0].children[0];
-            movements[r] = {};
-            [].slice.call(tr.children).forEach( (td, c) => {
-                if(c === 0){return;}
-                const key = c === 1 ? 'date' :
-                            c === 2 ? 'description' :
-                            c === 3 ? 'amount' : null;
-                if(key){
-                    const value = td.children[0].innerText;
-                    movements[r][key] = value;
-                }
-            });
+            const tr = el.children && el.children[0] && el.children[0].children && el.children[0].children[0];
+            if(tr){
+                movements[r] = {};
+                [].slice.call(tr.children).forEach( (td, c) => {
+                    if(c === 0){return;}
+                    const key = c === 1 ? 'date' :
+                                c === 2 ? 'description' :
+                                c === 3 ? 'amount' : null;
+                    if(key){
+                        const value = td.children[0].innerText;
+                        movements[r][key] = value;
+                    }
+                });
+            }
         });
         return {date: Date.now(), accountNumber, accounting, available, movements};
     });
