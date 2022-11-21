@@ -55,9 +55,11 @@ const PRIME_bookDays = async (page, branchCode, timeStamp, numDays, numMinutes, 
                 return [].slice.call(document.querySelector("#timeslot").children).map(o=>o.value);
             });
             let isBookable = true;
+            let alreadyBookedSlots = [];
             slots.forEach(s=>{
                 if(!availableSlots.includes(s)){
                     isBookable = false;
+                    alreadyBookedSlots.push(s);
                 }
             });
             if(isBookable){
@@ -76,6 +78,7 @@ const PRIME_bookDays = async (page, branchCode, timeStamp, numDays, numMinutes, 
                 logs.push({
                     booked: false,
                     date: finalTimeStamp,
+                    alreadyBookedSlots,
                     message: `Not booked: it's already booked.`
                 });
             }

@@ -40,7 +40,7 @@ const getBCNAssets = async (userName, password) => {
     });
     const page = await browser.newPage();
     console.log("BCN: logging in...");
-    await page.goto('https://particulares.bcn.cv/', {waitUntil: 'networkidle0', timeout: 0});
+    await page.goto('https://particulares.bcn.cv/', {waitUntil: 'networkidle0', timeout: 60000});
 
     const frameHandle = await page.$("iframe[id=mainFrame]");
     const frame = await frameHandle.contentFrame();
@@ -118,10 +118,7 @@ const getCAIXAAssets = async (userName, password) => {
     });
     const page = await browser.newPage();
     console.log("CAIXA: logging in...");
-    await page.goto('https://caixanet.caixa.cv/?l=en', {
-        waitUntil: 'networkidle0', 
-        timeout: 0
-    });
+    await page.goto('https://caixanet.caixa.cv/?l=en', {waitUntil: 'networkidle0', timeout: 60000});
     await page.evaluate(({userName, password}) => {
         document.querySelector("#username").value = userName;
         document.querySelector("#password").value = password;

@@ -111,15 +111,21 @@ app.get('/cv-assets/:bank', (req, res) => {
     }else{
         const {bank} = req.params;
         const bankFunction = bank === 'bcn' ? getBCNAssets : getCAIXAAssets;
-        bankFunction(userName, password)
-        .then(assets => {
-            // 
-            res.status(200).send(assets);
-        })
-        .catch(err => {
-            res.status(401).send(err.message);
-            console.log(err.message);
-        })
+        try{
+            bankFunction(userName, password)
+            .then(assets => {
+                // 
+                res.status(200).send(assets);
+            })
+            .catch(err => {
+                res.status(401).send(err.message);
+                console.log(err.message);
+            })
+        }
+        catch(err){
+            res.status(500).send("Server error");
+            console.error(err);
+        }
     }
 });
 
