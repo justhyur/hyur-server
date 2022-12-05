@@ -214,7 +214,8 @@ app.get('/cv-prime/accept-invitations', async (req, res) => {
             if(hasAccepted.error){
                 res.status(401).send(hasAccepted.message);
             }else{
-                res.status(200).send(hasAccepted.message);
+                const meetings = await PRIME_getMeetings(page);
+                res.status(200).send({meetings});
             }
         }
 
