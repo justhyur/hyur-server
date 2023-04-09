@@ -10,6 +10,13 @@ const dirTree = require("directory-tree");
 const {getBCNAssets, getCAIXAAssets} = require('./cv-banks');
 const {PRIME_logIn, PRIME_bookDays, PRIME_acceptBookings, PRIME_getMeetings} = require('./cv-prime');
 
+const bodyParser = require('body-parser');
+
+// Set the maximum request size to 50 megabytes
+app.use(bodyParser.json({ limit: '500mb' }));
+app.use(bodyParser.urlencoded({ limit: '500mb', extended: true }));
+
+
 dotenv.config();
 
 //GLOBALS
@@ -261,8 +268,8 @@ app.get('/cv-prime/meetings', async (req, res) => {
     }
 });
 
-app.get('/element-to-pdf', async (req, res) => {
-    const {token, htmlContent, fileName} = req.query;
+app.post('/element-to-pdf', async (req, res) => {
+    const {token, htmlContent, fileName} = req.body;
     if(token !== SERVER_TOKEN){
         res.status(401).send('Token is missing or not valid.');
     }else{
