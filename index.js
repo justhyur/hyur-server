@@ -260,6 +260,46 @@ app.get('/cv-prime/meetings', async (req, res) => {
     }
 });
 
+app.get('/element-to-pdf', async (req, res) => {
+    const {token, htmlContent, fileName} = req.query;
+    if(token !== SERVER_TOKEN){
+        res.status(401).send('Token is missing or not valid.');
+    }else{
+        try {
+    
+            // Launch a new browser instance
+            const browser = await puppeteer.launch({
+                headless: true,
+                args: ['--no-sandbox']
+            });
+        
+            // Create a new page in the browser
+            const page = await browser.newPage();
+        
+            // Set the content of the page to the HTML string
+            await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        
+            // Set the page size to A4
+            await page.emulateMediaType('screen');
+            await page.setViewport({ width: 595, height: 842 });
+        
+            // Generate the PDF
+            const pdf = await page.pdf({ format: 'A4', printBackground: true });
+        
+            // Close the browser
+            await browser.close();
+        
+            // Set the response headers and return the PDF
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=${fileName}.pdf`);
+            res.send(pdf);
+          } catch (error) {
+            console.error('Error generating PDF:', error);
+            res.status(500).json({ error: 'Error generating PDF' });
+          }
+    }
+})
+
 app.listen(PORT, () => {
     console.log(`Server started on PORT ${PORT}.`);
 });
