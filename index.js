@@ -35,6 +35,7 @@ const origin = [
     'https://cv-helper.vercel.app', 
     'https://cv-helper-app.vercel.app', 
     'https://cv-connections-viewer.vercel.app', 
+    'https://sendor.llc', 
 ]
 if(ALLOW_LOCALHOST){origin.push('http://localhost:3000')}
 
